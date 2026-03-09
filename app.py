@@ -1,25 +1,52 @@
-import google.generativeai as genai
 import streamlit as st
+import google.generativeai as genai
 
-def medical_chat(user_question):
+# Page configuration
+st.set_page_config(
+    page_title="Healthcare AI Assistant",
+    page_icon="🩺",
+    layout="wide"
+)
 
-    if "GEMINI_API_KEY" not in st.secrets:
-        return "⚠️ Gemini API key not configured."
+st.title("🩺 Healthcare AI Assistant")
+st.write("AI powered medical chatbot using Google Gemini")
 
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+# Configure API
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-    prompt = f"""
-    You are a helpful medical assistant.
+# Chat history
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-    Answer health questions in simple language.
-    Always recommend consulting a doctor.
+# User input
+user_input = st.text_input("Ask a medical question")
 
-    Question:
-    {user_question}
-    """
+if st.button("Ask AI"):
 
-    response = model.generate_content(prompt)
+    if user_input:
 
-    return response.text
+        prompt = f"""
+        You are a healthcare assistant.
+        Provide helpful medical information but remind users to consult a doctor.
+
+        Question: {user_input}
+        """
+
+        try:
+            response = model.generate_content(prompt)
+
+            st.session_state.chat_history.append(("User", user_input))
+            st.session_state.chat_history.append(("AI", response.text))
+
+        except Exception as e:
+            st.error(e)
+
+# Display chat
+for role, text in st.session_state.chat_history:
+
+    if role == "User":
+        st.markdown(f"**👤 You:** {text}")
+    else:
+        st.markdown(f"**🤖 AI:** {text}")
