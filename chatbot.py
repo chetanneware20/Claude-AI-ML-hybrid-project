@@ -1,21 +1,32 @@
 import google.generativeai as genai
-import streamlit as st
 
-def medical_chat(user_question):
+def medical_chat(user_input, api_key):
 
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    # Configure Gemini API
+    genai.configure(api_key=api_key)
 
+    # Load Gemini model
     model = genai.GenerativeModel("gemini-1.5-flash")
 
+    # Prompt for healthcare chatbot
     prompt = f"""
-    You are a helpful medical assistant.
-    Answer the question in simple language.
-    Always recommend consulting a doctor.
+    You are a helpful healthcare AI assistant.
 
-    Question:
-    {user_question}
+    Provide general medical information based on the user's question.
+    Do not give final medical diagnosis.
+    Always recommend consulting a qualified doctor for serious issues.
+
+    User Question:
+    {user_input}
     """
 
-    response = model.generate_content(prompt)
+    try:
+        response = model.generate_content(prompt)
 
-    return response.text
+        if response and response.text:
+            return response.text
+        else:
+            return "Sorry, I couldn't generate a response."
+
+    except Exception as e:
+        return f"Error: {str(e)}"
