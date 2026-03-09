@@ -1,20 +1,25 @@
+import google.generativeai as genai
 import streamlit as st
-from chatbot import medical_chat
 
-st.set_page_config(page_title="AI Medical Chatbot")
+def medical_chat(user_question):
 
-st.title("🏥 AI Medical Chatbot")
-st.write("Ask health related questions")
+    if "GEMINI_API_KEY" not in st.secrets:
+        return "⚠️ Gemini API key not configured."
 
-user_input = st.text_input("Enter your symptoms or question")
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-if st.button("Ask AI"):
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
-    if user_input != "":
+    prompt = f"""
+    You are a helpful medical assistant.
 
-        with st.spinner("AI is thinking..."):
+    Answer health questions in simple language.
+    Always recommend consulting a doctor.
 
-            response = medical_chat(user_input)
+    Question:
+    {user_question}
+    """
 
-        st.subheader("🤖 AI Response")
-        st.write(response)
+    response = model.generate_content(prompt)
+
+    return response.text
