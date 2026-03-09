@@ -1,28 +1,21 @@
-import anthropic
+import google.generativeai as genai
 import streamlit as st
 
 def medical_chat(user_question):
 
-    client = anthropic.Anthropic(
-        api_key=st.secrets["CLAUDE_API_KEY"]
-    )
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
     prompt = f"""
-    You are a helpful healthcare assistant.
-
-    Provide safe medical information but always include a disclaimer
-    that the user should consult a doctor.
+    You are a helpful medical assistant.
+    Answer the question in simple language.
+    Always recommend consulting a doctor.
 
     Question:
     {user_question}
     """
 
-    message = client.messages.create(
-        model="claude-3-sonnet-20240229",
-        max_tokens=300,
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
+    response = model.generate_content(prompt)
 
-    return message.content[0].text
+    return response.text
